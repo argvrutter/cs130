@@ -87,20 +87,19 @@ int values[] = {0, 0, 0, 0};
 void setup() {
   SetupPins();
   Serial.begin(115200);
-  //Serial.print("Enter value: ");
+  Serial.print("Enter value: ");
 }
-int value=0;
-int tmp;
+
 void loop() 
 {
-  //if (Serial && Serial.available() > 0) {
-    //String input = Serial.readString();
-    //int value = input.toInt();
-    tmp = value;
-    delay(100);
+  if (Serial && Serial.available() > 0) {
+    String input = Serial.readString();
+    int value = input.toInt();
     char buf[10];
-    
-  
+
+    if (value > 9999 || value < 0) {
+      value = 1234;
+    }
     values[0] = value / 1000;
     value -= values[0] * 1000;
     values[1] = value / 100;
@@ -108,17 +107,13 @@ void loop()
     values[2] = value / 10;
     value -= values[2] * 10;
     values[3] = value;
-    value = tmp;
-      if (value > 9999 || value < 0) {
-      value = 0;
-    }
     
     sprintf(buf, "%d %d %d %d", values[0], values[1], values[2], values[3]);
  
-    //Serial.print("\nDisplay set to ");
+    Serial.print("\nDisplay set to ");
     Serial.print(buf);
-    //Serial.print("\nEnter value: ");
-    
+    Serial.print("\nEnter value: ");
+  }
   for (int i = 0;i < 4;i++) {
     if (i >= segment_limit) {
       break;
@@ -127,6 +122,5 @@ void loop()
       SetSegment(i, values[i]);
     }
   }
-  value++;
 
 }
