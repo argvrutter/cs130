@@ -4,7 +4,7 @@
  * COSC 130 - Spring 2018
  * Learned about typedefs and passing functions by reference this lab
  */
-//reference to function obj for passing as parameter to delayAndRun (void, no parameters
+//reference to function for passing as parameter to delayAndRun (void, no parameters)
 typedef void (*functionCall)();
 //constants
 int m_tryCount, m_second, m_state;
@@ -49,7 +49,7 @@ void setup()
   pinMode(B_LEFT, INPUT);
   pinMode(B_MID, INPUT);
   pinMode(B_RIGHT, INPUT);
-  Serial.begin(9600);
+  
   // LED's
   pinMode(10, OUTPUT);//bottom LED
   pinMode(11, OUTPUT);
@@ -81,12 +81,10 @@ void loop()
     digitalWrite((10+i), HIGH);
   }
   digitalWrite(3, HIGH);
-  functionCall funcs[3];
-  funcs[0] = (functionCall)countdown;
-  funcs[1] = (functionCall)readState;
-  funcs[2] = (functionCall)buttonHandleRead;
   
-  delayAndRun(25000, 3, funcs);//counts down from 25
+  //run countdown and buttonHandleRead for 25 seconds
+  functionCall funcs[] = {(functionCall)countdown, (functionCall)buttonHandleRead}; 
+  delayAndRun(25000, 2, funcs);
 
   if(m_disarm)
   {
@@ -96,7 +94,7 @@ void loop()
   else
   {
     m_init = millis();
-    //digitalWrite(3, LOW);
+    digitalWrite(3, LOW);
     delayAndRun(3000, (functionCall)detonate);
   }
 }
@@ -118,7 +116,6 @@ int readState()
   m_elapsed = millis() - m_lastPress;
   if(m_elapsed > 250)
   {
-    //Serial.println("got here");
     if(digitalRead(B_LEFT)== LOW)
     {
       m_tryCount++;
@@ -153,10 +150,12 @@ void countdown()
   SetDigit(2, (m_second/10));
   SetDigit(3, (m_second%10));
 }
+
 void buttonHandleRead()
 {
   buttonHandler(readState()); 
 }
+
 //handles button input
 void buttonHandler(int guess)
 {
@@ -164,7 +163,6 @@ void buttonHandler(int guess)
   {
     return;
   }
-  //Serial.println(guess);
   if(guess == m_code[m_tryCount-1])
   {
     digitalWrite((9+m_tryCount),LOW); 
@@ -185,7 +183,7 @@ void buttonHandler(int guess)
 
 void delayAndRun(unsigned long ms, unsigned int numFuncs, functionCall calls[])
 {
-  while((millis() < (m_init + ms)) && !m_disarm)// 
+  while((millis() < (m_init + ms)) && !m_disarm)
   {
     for(int i=0; i<numFuncs; i++)
     {
