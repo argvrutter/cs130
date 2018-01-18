@@ -32,7 +32,7 @@ const int NUM_DIGITS = sizeof(DIGITS) / sizeof(DIGITS[0]);
 
 //prototypes
 void countdown();
-void buttonHandler(int guess);
+void delayAndRead(int guess);
 int readState();
 void SetDigit(int segment, int value);
 
@@ -80,7 +80,7 @@ void loop()
     //counts down from 25
     countdown();
     //manages interrupts of countdown
-    buttonHandler(readState());
+    delayAndRead(readState());
   }
   if(m_disarm)
   {
@@ -158,7 +158,7 @@ void countdown()
 }
 
 //handles button input
-void buttonHandler(int guess)
+void delayAndRead(int guess)
 {
   if(guess == -1)
   {
