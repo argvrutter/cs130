@@ -43,9 +43,6 @@ void setup()
   pinMode(B_MID, INPUT);
   pinMode(B_RIGHT, INPUT);
   
-  //potentiometer
-  pinMode(A0, INPUT);
-  
   // LED's
   pinMode(10, OUTPUT);//bottom LED
   pinMode(11, OUTPUT);
@@ -59,13 +56,14 @@ void setup()
   pinMode(CLK_DIO, OUTPUT);
   pinMode(DATA_DIO, OUTPUT);
   pinMode(LATCH_DIO, OUTPUT);
-  
+
+  //random seed
+  randomSeed(analogRead(A0)+millis());
 }
 //main loop
 void loop() 
 {
   //resetting variables, generating new code
-  randomSeed(analogRead(A0)+millis());
   unsigned long ms_init = millis();
   m_tryCount = 0;
   m_second=25;
