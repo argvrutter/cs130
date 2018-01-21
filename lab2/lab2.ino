@@ -153,13 +153,19 @@ void Dec(short &bcd)
 
 int GetBCD(short bcd)
 {
-  
+  int digit, value=0;
+  for(int i=0; i<4; i++)
+  {
+    digit = Read(bcd, i);
+    value |= digit << (i << 2); 
+  }
+  return value;
 }
 
 void setBCD(short &bcd, int value)
 {
-  int digit;
-   if(value > 9999)
+  char digit;
+  if(value > 9999)
   {
     value = 9999;
   }
