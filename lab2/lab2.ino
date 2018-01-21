@@ -108,21 +108,71 @@ void Write(short &bcd, int digit, char value)
 
 void Inc(short &bcd)
 {
-  
+  int value;
+  for(int i=0; i<4; i++)
+  {
+    value=Read(bcd, i);
+    if(value < 9)
+    {
+      Write(bcd, i, value+1);
+      return;
+    }
+    else
+    {
+      //assuming value = 9
+      Write(bcd, i, 0);
+    }
+  }
+  //bcd was 9999
+  bcd = 0b1001100110011001;
 }
 
 void Dec(short &bcd)
 {
-
+  int value;
+  bool carry=false;
+  for(int i=0; i<4; i++)
+  {
+    value=Read(bcd, i);
+    if(value > 0)
+    {
+      Write(bcd, i, value-1);
+      if(carry)
+      {
+        Write(bcd, i-1, 9);
+        carry = false;
+      }
+      return;
+    }
+    else
+    {
+       carry = true;
+    }
+  }
 }
 
 int GetBCD(short bcd)
 {
-
+  
 }
 
 void setBCD(short &bcd, int value)
 {
-
+  int digit;
+   if(value > 9999)
+  {
+    value = 9999;
+  }
+  else if(value < 0)
+  {
+    value = 0;
+  }
+  for(int i=0; i<4; i++)
+  {
+    //math, extracts digit
+    digit = (value / pow(10, i)) % 10;
+    Write(bcd, i, digit);
+  }
 }
+
 
