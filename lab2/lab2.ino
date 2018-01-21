@@ -1,64 +1,64 @@
 /*
- * Author: Aiden Rutter
- * Lab 2: Thermostat
- * COSC130 - SPRING2018
- */
+   Author: Aiden Rutter
+   Lab 2: Thermostat
+   COSC130 - SPRING2018
+*/
 
 //          globals
-unsigned short m_desiredBCDTemp, m_currentBCDTemp;
+short m_desiredBCDTemp, m_currentBCDTemp;
 //display globals
 const int DATA_DIO = 8;
 const int LATCH_DIO = 4;
 const int CLK_DIO = 7;
 const int SEGMENTS[] = {0b11110001, 0b11110010, 0b11110100, 0b11111000};
 const int DIGITS[] = {0b11000000, /* 0 */
-0b11111001, /* 1 */ 
-0b10100100, /* 2 */ 
-0b10110000, /* 3 */ 
-0b10011001, /* 4 */ 
-0b10010010, /* 5 */
-0b10000010, /* 6 */
-0b11111000, /* 7 */ 
-0b10000000, /* 8 */ 
-0b10010000, /* 9 */ 
-0b10111111, /* - <dash> */ 
-0b11111111, /* <blank> */
-};
-const int NUM_SEGMENTS = sizeof(SEGMENTS) / sizeof(SEGMENTS[0]); 
+                      0b11111001, /* 1 */
+                      0b10100100, /* 2 */
+                      0b10110000, /* 3 */
+                      0b10011001, /* 4 */
+                      0b10010010, /* 5 */
+                      0b10000010, /* 6 */
+                      0b11111000, /* 7 */
+                      0b10000000, /* 8 */
+                      0b10010000, /* 9 */
+                      0b10111111, /* - <dash> */
+                      0b11111111, /* <blank> */
+                     };
+const int NUM_SEGMENTS = sizeof(SEGMENTS) / sizeof(SEGMENTS[0]);
 const int NUM_DIGITS = sizeof(DIGITS) / sizeof(DIGITS[0]);
-const int B_LEFT = A1, B_MID=A2, B_RIGHT = A3;
+const int B_LEFT = A1, B_MID = A2, B_RIGHT = A3;
 
 //          prototypes
 /*
- * Read: returns value of specified digit of packed BCD
- * shift right 4*digit times
+   Read: returns value of specified digit of packed BCD
+   shift right 4*digit times
 */
 int Read(short bcd, int digit);
 /*
- * writes half a char, checks b/t 0 and 9 
- */
-void Write(unsigned short &bcd, int digit, char value);
+   writes half a char, checks b/t 0 and 9
+*/
+void Write(short &bcd, int digit, char value);
 /*
- * Increments BCD value by one, if it's 9999 do nothing 
- * Can use non binary arithmetic
- */
-void Inc(unsigned short &bcd);
+   Increments BCD value by one, if it's 9999 do nothing
+   Can use non binary arithmetic
+*/
+void Inc(short &bcd);
 /*
- * Decrements BCD by one, do nothing if 0. 
- * Can use non binary arithmetic
- */
-void Dec(unsigned short &bcd);
+   Decrements BCD by one, do nothing if 0.
+   Can use non binary arithmetic
+*/
+void Dec(short &bcd);
 /*
- * Returns encodes BCD value as normal integer value
- */
+   Returns encodes BCD value as normal integer value
+*/
 int GetBCD(short bcd);
 /*
- * Takes a normal int and encodes it into bcd format. If < 0, encode as 0, if > 9999, encode as 9999 
- * hint use read function
- */
+   Takes a normal int and encodes it into bcd format. If < 0, encode as 0, if > 9999, encode as 9999
+   hint use read function
+*/
 void setBCD(short &bcd, int value);
 
-void setup() 
+void setup()
 {
   //        pinmodes
   // LED's
@@ -77,42 +77,52 @@ void setup()
   pinMode(B_LEFT, INPUT);//power
   pinMode(B_MID, INPUT);//temp up
   pinMode(B_RIGHT, INPUT);//temp down
-  
+
 }
 
-void loop() 
+void loop()
 {
-  
 
 }
 
 int Read(short bcd, int digit)
 {
-  
+  short mask = 0xf << (digit << 2);
+  bcd &= mask;
+  bcd >>= (digit << 2);
+  return bcd;
 }
 
-void Write(unsigned short &bcd, int digit, char value)
+void Write(short &bcd, int digit, char value)
+{
+  short mask ~= 0xf << (digit << 2);
+  if(value > 9)
+  {
+    return;
+  }
+  //wipes numbers at given digit
+  bcd &= mask;
+  //replaces with value
+  bcd |= static_cast<short>(value) << (digit << 2);
+}
+
+void Inc(short &bcd)
 {
   
 }
 
-void Inc(unsigned short &bcd)
+void Dec(short &bcd)
 {
-  
-}
 
-void Dec(unsigned short &bcd)
-{
-  
 }
 
 int GetBCD(short bcd)
 {
-  
+
 }
 
 void setBCD(short &bcd, int value)
 {
-  
+
 }
 
