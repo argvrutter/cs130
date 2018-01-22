@@ -82,7 +82,7 @@ void setup()
 
 void loop()
 {
-
+  
 }
 
 int Read(short bcd, int digit)
@@ -108,6 +108,7 @@ void Write(short &bcd, int digit, char value)
 
 void Inc(short &bcd)
 {
+  //a bit more efficient than just reading the int value, adding, writing back to bcd
   int value;
   for(int i=0; i<4; i++)
   {
