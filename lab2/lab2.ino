@@ -6,6 +6,8 @@
 
 //          globals
 short m_desiredBCDTemp, m_currentBCDTemp;
+int m_state=-1;
+bool m_on;
 //display globals
 const int DATA_DIO = 8;
 const int LATCH_DIO = 4;
@@ -57,7 +59,22 @@ int GetBCD(short bcd);
    hint use read function
 */
 void setBCD(short &bcd, int value);
-
+/*
+ * Provided LCD setting function
+ */
+void SetDigit(int segment, int value);
+/*
+ * Returns the button state
+ */
+int readState();
+/*
+ * manages actions taken upon reading change in state
+ */
+void handleInput(int bState);
+/*
+ * self explanatory displays the temperature
+ */
+void displayTemp();
 void setup()
 {
   //        pinmodes
@@ -78,11 +95,15 @@ void setup()
   pinMode(B_MID, INPUT);//temp up
   pinMode(B_RIGHT, INPUT);//temp down
 
+  //init desired and current
+  setBCD(m_desiredBCDTemp, analogRead(A0));
+  setBCD(m_currentBCDTemp, analogRead(A0));
 }
 
 void loop()
 {
-  
+  displayTemp();
+  handleInput(readInput());
 }
 
 int Read(short bcd, int digit)
@@ -95,7 +116,8 @@ int Read(short bcd, int digit)
 
 void Write(short &bcd, int digit, char value)
 {
-  short mask ~= 0xf << (digit << 2);
+  short mask= 0xf << (digit << 2);
+  mask = ~mask;
   if(value > 9)
   {
     return;
@@ -177,9 +199,93 @@ void setBCD(short &bcd, int value)
   for(int i=0; i<4; i++)
   {
     //math, extracts digit
-    digit = (value / pow(10, i)) % 10;
+    digit = (value / static_cast<int>(pow(10, i))) % 10;
     Write(bcd, i, digit);
   }
 }
+
+void SetDigit(int segment, int value) 
+{
+  if ((value >= 0 && value < NUM_DIGITS) && (segment >= 0 && segment < NUM_SEGMENTS)) 
+  { 
+    digitalWrite(LATCH_DIO, LOW); 
+    shiftOut(DATA_DIO, CLK_DIO, MSBFIRST, DIGITS[value]); 
+    shiftOut(DATA_DIO, CLK_DIO, MSBFIRST, SEGMENTS[segment]); 
+    digitalWrite(LATCH_DIO, HIGH);
+  }
+}
+
+int readState()
+{
+  //button must be pressed, then released
+  int temp = analogRead(A0);
+  // device is on and desired temp greater than current
+  if(m_on && (GetBCD(m_desiredBCDTemp) > GetBCD(m_currentBCDTemp)))
+  {
+    digitalWrite(10, LOW);
+    if(abs(temp-GetBCD(m_currentBCDTemp)) > 5)
+    {
+      setBCD(m_currentBCDTemp, temp);
+    }
+  }
+  else
+  {
+    digitalWrite(10, HIGH);
+  }
+  if(((m_state > -1) && (m_state < 3)) && digitalRead(B_LEFT)
+  == HIGH && digitalRead(B_MID) == HIGH && digitalRead(B_RIGHT) == HIGH)
+  {
+    return m_state;
+  }
+  if(digitalRead(B_LEFT)== LOW)
+  {
+    m_state = 0;
+  }
+  else if(digitalRead(B_MID) == LOW)
+  {
+    m_state = 1;
+  }
+  else if(digitalRead(B_RIGHT) == LOW)
+  {
+    m_state = 2;
+  }
+  else
+  {
+    m_state = -1;
+    return m_state;
+  }
+}
+
+void handleInput(int bState)
+{
+  switch(bState)
+  {
+    case -1:
+    {
+      
+    }
+    case 0:
+    {
+      
+    }
+    case 1:
+    {
+      
+    }
+    case 2:
+    {
+      
+    }
+  }
+}
+
+void displayTemp()
+{
+  for(int i=0; i<4; i++)
+  {
+    
+  }
+}
+
 
 
