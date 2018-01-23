@@ -6,6 +6,7 @@
 
 //          globals
 short m_desiredBCDTemp, m_currentBCDTemp;
+unsigned long m_lastPush=0;
 int m_state=-1;
 bool m_on;
 //display globals
@@ -72,7 +73,7 @@ int readState();
  */
 void handleInput(int bState);
 /*
- * self explanatory displays the temperature
+ * displays the temperature, desired if desired is changed, else current temp
  */
 void displayTemp();
 void setup()
@@ -102,8 +103,8 @@ void setup()
 
 void loop()
 {
+  handleInput(readState());
   displayTemp();
-  handleInput(readInput());
 }
 
 int Read(short bcd, int digit)
@@ -262,28 +263,41 @@ void handleInput(int bState)
   {
     case -1:
     {
-      
+      break;
     }
     case 0:
     {
-      
+      m_on = !m_on;
+      break;
     }
     case 1:
     {
-      
+      m_lastPush = millis();
+      Inc(m_desiredBCDTemp);
+      break;
     }
     case 2:
     {
-      
+      m_lastPush = millis();
+      Dec(m_desiredBCDTemp);
+      break;
     }
   }
 }
 
 void displayTemp()
 {
+  //if desired change, display desired for 500 ms.
   for(int i=0; i<4; i++)
-  {
-    
+  {  
+    if(millis() - m_lastPush < 500)
+    {
+      SetDigit(i, Read(m_desiredBCDTemp, i));
+    }
+    else
+    {
+      SetDigit(i, Read(m_currentBCDTemp, i));
+    }
   }
 }
 
