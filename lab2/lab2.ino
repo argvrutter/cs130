@@ -74,12 +74,13 @@ int readState();
 void handleInput(int bState);
 /*
  * displays the temperature, desired if desired is changed, else current temp
+ * Desired temp can changed and displayed simultaneously
  */
 void displayTemp();
 void setup()
 {
   //        pinmodes
-  Serial.begin(9600);
+
   // LED's
   pinMode(10, OUTPUT);//heating element activated
   pinMode(13, OUTPUT);//power light
@@ -100,30 +101,13 @@ void setup()
   //init desired and current
   setBCD(m_desiredBCDTemp, analogRead(A0));
   setBCD(m_currentBCDTemp, analogRead(A0));
+  digitalWrite(13, HIGH);
 }
 
 void loop()
 {
   handleInput(readState());
   displayTemp();
-  /*
-  short bcd;
-  int test = analogRead(A0);
-  Serial.println('\n');
-  Serial.println("analog read: ");
-  Serial.println(test);
-  setBCD(bcd, test);
-  Serial.println("BCD value: ");
-  Serial.println(bcd, BIN);
-  Serial.println("BCD (getBCD): ");
-  Serial.println(GetBCD(bcd));
-  Serial.println("Incrememt: ");
-  Inc(bcd);
-  Serial.println(GetBCD(bcd));
-  Serial.println("Decrememt: ");
-  Dec(bcd);
-  Serial.println(GetBCD(bcd));
-  */
 }
 
 int Read(short bcd, int digit)
@@ -136,8 +120,7 @@ int Read(short bcd, int digit)
 
 void Write(short &bcd, int digit, char value)
 {
-  short mask= 0xf << (digit << 2);
-  mask = ~mask;
+  short mask= ~(0xf << (digit << 2));
   if(value > 9)
   {
     return;
@@ -200,9 +183,6 @@ int GetBCD(short bcd)
   for(int i=0; i<4; i++)
   {
     digit = Read(bcd, i);
-    //Serial.println('\n');
-    //Serial.println("Digit from read: ");
-    //Serial.println(digit);
     value += digit * pow(10,i); 
   }
   return value;
@@ -229,7 +209,7 @@ void setBCD(short &bcd, int value)
 
 void SetDigit(int segment, int value) 
 {
-  if ((value >= 0 && value < NUM_DIGITS) && (segment >= 0 && segment < NUM_SEGMENTS)) 
+  if((value >= 0 && value < NUM_DIGITS) && (segment >= 0 && segment < NUM_SEGMENTS)) 
   { 
     digitalWrite(LATCH_DIO, LOW); 
     shiftOut(DATA_DIO, CLK_DIO, MSBFIRST, DIGITS[value]); 
@@ -242,14 +222,11 @@ int readState()
 {
   //button must be pressed, then released
   int temp = analogRead(A0), n;
-  //Serial.println(temp);
-  //Serial.println("Current: ");
-  //Serial.println(GetBCD(m_currentBCDTemp)); 
   // device is on and desired temp greater than current
   if(m_on && (GetBCD(m_desiredBCDTemp) > GetBCD(m_currentBCDTemp)))
   {
     digitalWrite(10, LOW);
-    if(abs(temp-GetBCD(m_currentBCDTemp)) > 5)
+    if(abs(temp-GetBCD(m_currentBCDTemp)) >= 5)
     {
       setBCD(m_currentBCDTemp, temp);
     }
@@ -261,10 +238,7 @@ int readState()
   if(((m_state > -1) && (m_state < 3)) && digitalRead(B_LEFT)
   == HIGH && digitalRead(B_MID) == HIGH && digitalRead(B_RIGHT) == HIGH)
   {
-    //Serial.println("State: ");
-    //Serial.println(m_state);
     n = m_state;
-    Serial.println("tello");
     m_state = -1;
     return n;
   }
@@ -280,11 +254,7 @@ int readState()
   {
     m_state = 2;
   }
-  else
-  {
-    m_state = -1;
-    return m_state;
-  }
+  return -1;
 }
 
 void handleInput(int bState)
@@ -293,12 +263,11 @@ void handleInput(int bState)
   {
     case -1:
     {
-      break;
+      return;
     }
     case 0:
     {
       m_on = !m_on;
-      Serial.println("ey");
       digitalWrite(13, !m_on);
       break;
     }
@@ -319,13 +288,12 @@ void handleInput(int bState)
 
 void displayTemp()
 {
-  //if desired change, display desired for 500 ms.
+  //if desired change, display desired for 500 ms. User can input while desired temp is shown as well
   for(int i=0; i<4; i++)
   {  
+    //display current temp unless button has been pressed past 500ms 
     if(millis() - m_lastPush < 500)
     {
-      //Serial.println("ey");
-      //Serial.print(Read(m_desiredBCDTemp, i));
       SetDigit(i, Read(m_desiredBCDTemp, (3-i)));
     }
     else
