@@ -8,7 +8,7 @@
 short m_desiredBCDTemp, m_currentBCDTemp;
 unsigned long m_lastPush=0;
 int m_state=-1;
-bool m_on;
+bool m_on=false;
 //display globals
 const int DATA_DIO = 8;
 const int LATCH_DIO = 4;
@@ -79,6 +79,7 @@ void displayTemp();
 void setup()
 {
   //        pinmodes
+  Serial.begin(9600);
   // LED's
   pinMode(10, OUTPUT);//heating element activated
   pinMode(13, OUTPUT);//power light
@@ -105,6 +106,24 @@ void loop()
 {
   handleInput(readState());
   displayTemp();
+  /*
+  short bcd;
+  int test = analogRead(A0);
+  Serial.println('\n');
+  Serial.println("analog read: ");
+  Serial.println(test);
+  setBCD(bcd, test);
+  Serial.println("BCD value: ");
+  Serial.println(bcd, BIN);
+  Serial.println("BCD (getBCD): ");
+  Serial.println(GetBCD(bcd));
+  Serial.println("Incrememt: ");
+  Inc(bcd);
+  Serial.println(GetBCD(bcd));
+  Serial.println("Decrememt: ");
+  Dec(bcd);
+  Serial.println(GetBCD(bcd));
+  */
 }
 
 int Read(short bcd, int digit)
@@ -181,7 +200,10 @@ int GetBCD(short bcd)
   for(int i=0; i<4; i++)
   {
     digit = Read(bcd, i);
-    value |= digit << (i << 2); 
+    //Serial.println('\n');
+    //Serial.println("Digit from read: ");
+    //Serial.println(digit);
+    value += digit * pow(10,i); 
   }
   return value;
 }
@@ -219,7 +241,10 @@ void SetDigit(int segment, int value)
 int readState()
 {
   //button must be pressed, then released
-  int temp = analogRead(A0);
+  int temp = analogRead(A0), n;
+  //Serial.println(temp);
+  //Serial.println("Current: ");
+  //Serial.println(GetBCD(m_currentBCDTemp)); 
   // device is on and desired temp greater than current
   if(m_on && (GetBCD(m_desiredBCDTemp) > GetBCD(m_currentBCDTemp)))
   {
@@ -236,7 +261,11 @@ int readState()
   if(((m_state > -1) && (m_state < 3)) && digitalRead(B_LEFT)
   == HIGH && digitalRead(B_MID) == HIGH && digitalRead(B_RIGHT) == HIGH)
   {
-    return m_state;
+    //Serial.println("State: ");
+    //Serial.println(m_state);
+    n = m_state;
+    m_state = -1;
+    return n;
   }
   if(digitalRead(B_LEFT)== LOW)
   {
@@ -292,11 +321,13 @@ void displayTemp()
   {  
     if(millis() - m_lastPush < 500)
     {
-      SetDigit(i, Read(m_desiredBCDTemp, i));
+      //Serial.println("ey");
+      //Serial.print(Read(m_desiredBCDTemp, i));
+      SetDigit(i, Read(m_desiredBCDTemp, (3-i)));
     }
     else
     {
-      SetDigit(i, Read(m_currentBCDTemp, i));
+      SetDigit(i, Read(m_currentBCDTemp, (3-i)));
     }
   }
 }
