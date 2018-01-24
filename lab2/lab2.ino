@@ -264,6 +264,7 @@ int readState()
     //Serial.println("State: ");
     //Serial.println(m_state);
     n = m_state;
+    Serial.println("tello");
     m_state = -1;
     return n;
   }
@@ -297,6 +298,8 @@ void handleInput(int bState)
     case 0:
     {
       m_on = !m_on;
+      Serial.println("ey");
+      digitalWrite(13, !m_on);
       break;
     }
     case 1:
