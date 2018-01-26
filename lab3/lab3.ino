@@ -3,8 +3,16 @@
    Lab 3: Binary calculator
    COSC130 - SPRING2018
 */
-
+struct int_4
+{
+  signed t:4;
+};
 //      globals
+int m_state=-1;
+int m_total;
+char m_num;
+bool m_once=1;
+unsigned short m_init;
 //display globals
 const int DATA_DIO = 8;
 const int LATCH_DIO = 4;
@@ -45,6 +53,18 @@ int Mul(short left, short right);
  * sets digits n such
  */
 void SetDigit(int segment, int value);
+/*
+ * Returns the button state
+ */
+int readState();
+/*
+ * handles buttons and such
+ */
+void buttonHandler(int bState);
+/*
+ * displays da result
+ */
+void displayResult();
 //sets us up with some sweet pins
 void setup() 
 {
@@ -59,10 +79,10 @@ void setup()
   pinMode(B_RIGHT, INPUT);//temp down
 
   //LEDS
-  pinMode(10, OUTPUT);
-  pinMode(11, OUTPUT);
-  pinMode(12, OUTPUT);
-  pinMode(13, OUTPUT);
+  pinMode(10, OUTPUT);//1
+  pinMode(11, OUTPUT);//2
+  pinMode(12, OUTPUT);//4
+  pinMode(13, OUTPUT);//8
 
 }
 //main loop, the big kahuna
@@ -106,12 +126,12 @@ int Mul(short left, short right)
   //checking signs
   if(left & (1 << 15))
   {
-    left = Two(left);
+    left = Twos(left);
     neg = !neg;
   }
   if(right & (1 << 15))
   {
-    right = Two(right);
+    right = Twos(right);
     neg = !neg;
   }
   //multiplication is just adding the left term right times.
@@ -124,5 +144,71 @@ int Mul(short left, short right)
     sum = Twos(sum);
   }
   return sum;
+}
+
+int readState()
+{
+  //button must be pressed, then released
+  int priorState=m_state, n;
+  if(((m_state > -1) && (m_state < 3)) && digitalRead(B_LEFT)
+  == HIGH && digitalRead(B_MID) == HIGH && digitalRead(B_RIGHT) == HIGH)
+  {
+    if(!m_once && m_state == 0)
+    {
+      m_once = 1;
+      //if held 3 seconds does not also add
+      return -1;
+    }
+    n = m_state;
+    m_state = -1;
+    return n;
+  }
+  //negates number if held for 3 seconds
+  if(digitalRead(B_LEFT)== LOW)
+  {
+    //saves time of first press
+    if(priorState == -1)
+    {
+      m_init = millis();
+      
+    }
+    else if((millis() - m_init > 3000) && m_once)
+    {
+      m_total = Twos(m_total);
+      m_once = 0;
+    }
+    m_state = 0;
+  }
+  else if(digitalRead(B_MID) == LOW)
+  {
+    m_state = 1;
+  }
+  else if(digitalRead(B_RIGHT) == LOW)
+  {
+    m_state = 2;
+  }
+  return -1;
+}
+
+void buttonHandler(int bState)
+{
+  switch(bState)
+  {
+    case 0:
+    {
+      
+      break;
+    }
+    case 1:
+    {
+
+      break;
+    }
+    case 2:
+    {
+      
+      break;
+    }
+  }
 }
 
