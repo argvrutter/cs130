@@ -3,14 +3,15 @@
    Lab 3: Binary calculator
    COSC130 - SPRING2018
 */
+// takes a byte but only uses 4 bits of it
 struct int_4
 {
   signed t:4;
 };
 //      globals
+int_4 m_num;
 int m_state=-1;
-int m_total;
-char m_num;
+int m_total=0;
 bool m_once=1;
 unsigned short m_init;
 //display globals
@@ -83,12 +84,17 @@ void setup()
   pinMode(11, OUTPUT);//2
   pinMode(12, OUTPUT);//4
   pinMode(13, OUTPUT);//8
-
+  Serial.begin(9600);
+  m_num.t = 0;
 }
 //main loop, the big kahuna
 void loop() 
 {
-  
+  buttonHandler(readState());
+  displayResult();
+  //short temp = 1;
+  //Serial.println('\n');
+  //Serial.println(Twos(temp));
 }
 
 void SetDigit(int segment, int value) 
@@ -116,7 +122,7 @@ short Add(short left, short right)
 
 short Twos(short value)
 {
-  return Add(~value, 1);
+  return Add((~value), 1);
 }
 
 int Mul(short left, short right)
@@ -164,26 +170,32 @@ int readState()
     return n;
   }
   //negates number if held for 3 seconds
+  
   if(digitalRead(B_LEFT)== LOW)
   {
     //saves time of first press
     if(priorState == -1)
     {
       m_init = millis();
-      
     }
     else if((millis() - m_init > 3000) && m_once)
     {
+      Serial.println('here');
       m_total = Twos(m_total);
       m_once = 0;
     }
     m_state = 0;
   }
-  else if(digitalRead(B_MID) == LOW)
+  // add logic so that if a2, a3 held @ same time, reset current value
+  else if(digitalRead(B_MID) + digitalRead(B_RIGHT) == LOW)
+  {
+    m_state = 3;
+  }
+  else if(digitalRead(B_MID) == LOW && priorState != 3)
   {
     m_state = 1;
   }
-  else if(digitalRead(B_RIGHT) == LOW)
+  else if(digitalRead(B_RIGHT) == LOW && priorState != 3)
   {
     m_state = 2;
   }
@@ -196,18 +208,62 @@ void buttonHandler(int bState)
   {
     case 0:
     {
-      
+      m_num.t++;
       break;
     }
     case 1:
     {
-
+      m_total = Add(m_total, m_num.t);
       break;
     }
     case 2:
     {
-      
+      m_total = Mul(m_total, m_num.t);
       break;
+    }
+    case 3:
+    {
+      Serial.println("got here 2");
+      m_total = 0;
+      break;
+    }
+  }
+  if(m_total > 999)
+  {
+    m_total = 999;
+  }
+  else if(m_total < -999)
+  {
+    m_total = -999;
+  }
+}
+
+void displayResult()
+{
+  if( m_total >= 0)
+  {
+    for(int i=0; i<4; i++)
+    {
+      if(m_num.t & (1 << i))
+      {
+        digitalWrite(10+i, LOW);
+      }
+      else
+      {
+        digitalWrite(10+i, HIGH);
+      }
+      //formula for extraction of digit
+      SetDigit((3-i), (m_total / static_cast<int>(pow(10, i)) % 10));
+    }
+  }
+  else
+  {
+    SetDigit(0,10);
+    for(int i=1; i<4; i++)
+    {
+      //Serial.println(m_total);
+      //Serial.println((abs(m_total) / static_cast<int>(pow(10, i)) % 10));
+      SetDigit(i, (abs(m_total) / static_cast<int>(pow(10, (3-i))) % 10));
     }
   }
 }
