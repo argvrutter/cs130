@@ -10,7 +10,7 @@ struct int_4
 };
 //      globals
 int_4 m_num;
-int m_state=-1;
+int m_lastState=0;
 int m_total=0;
 bool m_once=1;
 unsigned short m_init;
@@ -84,17 +84,16 @@ void setup()
   pinMode(11, OUTPUT);//2
   pinMode(12, OUTPUT);//4
   pinMode(13, OUTPUT);//8
-  Serial.begin(9600);
+  
   m_num.t = 0;
+  m_init = millis();
 }
 //main loop, the big kahuna
 void loop() 
 {
   buttonHandler(readState());
   displayResult();
-  //short temp = 1;
-  //Serial.println('\n');
-  //Serial.println(Twos(temp));
+  
 }
 
 void SetDigit(int segment, int value) 
@@ -154,76 +153,64 @@ int Mul(short left, short right)
 
 int readState()
 {
-  //button must be pressed, then released
-  int priorState=m_state, n;
-  if(((m_state > -1) && (m_state < 3)) && digitalRead(B_LEFT)
-  == HIGH && digitalRead(B_MID) == HIGH && digitalRead(B_RIGHT) == HIGH)
+ /*
+ * State 
+ * bit 0: Button 1
+ * bit 1: button 2
+ * bit 2: button 3
+ */
+  unsigned int state=0, val=0;
+  state |= !digitalRead(B_LEFT);
+  state |= (!digitalRead(B_MID) << 1);
+  state |= (!digitalRead(B_RIGHT) << 2);
+  //initially pressed
+  if(m_lastState == 0 && state != 0)
   {
-    if(!m_once && m_state == 0)
-    {
-      m_once = 1;
-      //if held 3 seconds does not also add
-      return -1;
-    }
-    n = m_state;
-    m_state = -1;
-    return n;
+    m_init = millis();
+    m_once = 0;
   }
-  //negates number if held for 3 seconds
+  //full release
+  if(m_lastState != 0 && state == 0 && !m_once)
+  {
+    val = m_lastState;
+  }
+  //partial release (ie pressing b2&b3)
+  else if(m_lastState == 6 && state != 0 )
+  {
+    state = 6;
+  }
+  //button 1 held for more than 3s, not available again until another initial press
+  if((state == 1) && (m_lastState == 1) && ((millis() - m_init) > 3000) && !m_once)
+  {
+    m_total = Twos(m_total);
+    m_once = 1;
+  }
   
-  if(digitalRead(B_LEFT)== LOW)
-  {
-    //saves time of first press
-    if(priorState == -1)
-    {
-      m_init = millis();
-    }
-    else if((millis() - m_init > 3000) && m_once)
-    {
-      Serial.println('here');
-      m_total = Twos(m_total);
-      m_once = 0;
-    }
-    m_state = 0;
-  }
-  // add logic so that if a2, a3 held @ same time, reset current value
-  else if(digitalRead(B_MID) + digitalRead(B_RIGHT) == LOW)
-  {
-    m_state = 3;
-  }
-  else if(digitalRead(B_MID) == LOW && priorState != 3)
-  {
-    m_state = 1;
-  }
-  else if(digitalRead(B_RIGHT) == LOW && priorState != 3)
-  {
-    m_state = 2;
-  }
-  return -1;
+  m_lastState = state;
+  return val;
 }
 
 void buttonHandler(int bState)
 {
   switch(bState)
   {
-    case 0:
+    case 1:
     {
       m_num.t++;
       break;
     }
-    case 1:
+    case 2:
     {
       m_total = Add(m_total, m_num.t);
       break;
     }
-    case 2:
+    case 4:
     {
       m_total = Mul(m_total, m_num.t);
       break;
     }
-    case 3:
+    case 6:
     {
-      Serial.println("got here 2");
       m_total = 0;
       break;
     }
@@ -240,18 +227,23 @@ void buttonHandler(int bState)
 
 void displayResult()
 {
+  //set LED's
+  for(int i=0; i<4; i++)
+  {
+    if(m_num.t & (1 << i))
+    {
+      digitalWrite(10+i, LOW);
+    }
+    else
+    {
+      digitalWrite(10+i, HIGH);
+    }
+  }
+  //set LCD
   if( m_total >= 0)
   {
     for(int i=0; i<4; i++)
     {
-      if(m_num.t & (1 << i))
-      {
-        digitalWrite(10+i, LOW);
-      }
-      else
-      {
-        digitalWrite(10+i, HIGH);
-      }
       //formula for extraction of digit
       SetDigit((3-i), (m_total / static_cast<int>(pow(10, i)) % 10));
     }
@@ -261,8 +253,6 @@ void displayResult()
     SetDigit(0,10);
     for(int i=1; i<4; i++)
     {
-      //Serial.println(m_total);
-      //Serial.println((abs(m_total) / static_cast<int>(pow(10, i)) % 10));
       SetDigit(i, (abs(m_total) / static_cast<int>(pow(10, (3-i))) % 10));
     }
   }
