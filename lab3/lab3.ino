@@ -84,7 +84,7 @@ void setup()
   pinMode(11, OUTPUT);//2
   pinMode(12, OUTPUT);//4
   pinMode(13, OUTPUT);//8
-  Serial.begin(9600);
+  
   m_num.t = 0;
   m_init = millis();
 }
@@ -153,7 +153,7 @@ int Mul(short left, short right)
 
 int readState()
 {
-  /*
+ /*
  * State 
  * bit 0: Button 1
  * bit 1: button 2
@@ -164,12 +164,13 @@ int readState()
   state |= (!digitalRead(B_MID) << 1);
   state |= (!digitalRead(B_RIGHT) << 2);
   //initially pressed
-  if(m_lastState == 0 && state !=0)
+  if(m_lastState == 0 && state != 0)
   {
     m_init = millis();
+    m_once = 0;
   }
   //full release
-  if(m_lastState != 0 && state == 0)
+  if(m_lastState != 0 && state == 0 && !m_once)
   {
     val = m_lastState;
   }
@@ -177,6 +178,12 @@ int readState()
   else if(m_lastState == 6 && state != 0 )
   {
     state = 6;
+  }
+  //button 1 held for more than 3s, not available again until another initial press
+  if((state == 1) && (m_lastState == 1) && ((millis() - m_init) > 3000) && !m_once)
+  {
+    m_total = Twos(m_total);
+    m_once = 1;
   }
   
   m_lastState = state;
@@ -189,7 +196,6 @@ void buttonHandler(int bState)
   {
     case 1:
     {
-      if((millis() - m_init) > 3000
       m_num.t++;
       break;
     }
@@ -221,18 +227,23 @@ void buttonHandler(int bState)
 
 void displayResult()
 {
+  //set LED's
+  for(int i=0; i<4; i++)
+  {
+    if(m_num.t & (1 << i))
+    {
+      digitalWrite(10+i, LOW);
+    }
+    else
+    {
+      digitalWrite(10+i, HIGH);
+    }
+  }
+  //set LCD
   if( m_total >= 0)
   {
     for(int i=0; i<4; i++)
     {
-      if(m_num.t & (1 << i))
-      {
-        digitalWrite(10+i, LOW);
-      }
-      else
-      {
-        digitalWrite(10+i, HIGH);
-      }
       //formula for extraction of digit
       SetDigit((3-i), (m_total / static_cast<int>(pow(10, i)) % 10));
     }
