@@ -1,16 +1,21 @@
 /*
  * Author: Aiden Rutter
  * Lab 4: Double vector
- * Personal goal: memory is stored contiguously and efficiently
- * Strategy: Stack-like method of retrieval and storage.
  */
-
-
-using namespace std;
+#include <cmath>
+#include <iostream>
 class doublevector
 {
    double *mValues;
    int mNumElements;
+   //using new keyword, allocates space for an additional double. Deletes old allocation, replaces with a new one.
+   //Uninitialized value at beginning by default.
+   //If second parameter set to true, deallocates a double instead.
+   //index parameter is the element where space will be allocated/deallocated
+
+   void allocDouble(unsigned int index=0);
+
+   void deAllocDouble(unsigned int index=0);
 public:
    //Allocate an empty vector (mNumElements = 0)
    doublevector();
@@ -34,6 +39,7 @@ public:
    double *at(int which_element);
    //Same as above, just for constant classes.
    const double *at(int which_element) const;
+
    //Returns the number of elements in this class instance.
    int size() const;
 };
@@ -61,38 +67,106 @@ doublevector::~doublevector()
 
 void doublevector::push_back(double value_to_push)
 {
-  /*
-    double temp[mNumElements +1];
-    for(int i=0; i<mNumElements; i++)
-    {
-      temp[i]= mValues[i];
-    }
-    temp[mNumElements] = value_to_push;
-    delete[] mValues;
-    mNumElements++;
-    mValues = new double[mNumElements];
-    mValues = temp;
-    */
+	allocDouble(mNumElements);
+	mValues[mNumElements-1] = value_to_push;
 }
 
 void doublevector::insert(double value_to_insert, int index_to_insert)
 {
-    delete[] mValues;
-
+    allocDouble(index_to_insert);
+    mValues[index_to_insert] = value_to_insert;
 }
 
 void doublevector::erase(int which_element_to_erase)
 {
-
+    deAllocDouble(which_element_to_erase);
 }
 
 double* doublevector::at(int which_element)
 {
-
+    if(!((which_element < 0 )||(which_element >= mNumElements)))
+    {
+        return &mValues[which_element];
+    }
+    else
+    {
+        return NULL;
+    }
 }
 const double* doublevector::at(int which_element) const
 {
+    //if it doesn't exist return nullptr
+    if(!((which_element < 0 )||(which_element >= mNumElements)))
+    {
+        return &mValues[which_element];
+    }
+    else
+    {
+        return NULL;
+    }
+}
 
+void doublevector::deAllocDouble(unsigned int index)
+{
+    int j=0;
+    int temp[mNumElements-1];
+
+    if(index > mNumElements-1)
+    {
+        return;
+    }
+
+    for(int i=0; i<mNumElements; i++)
+    {
+        if(i == index)
+        {
+            i++;
+        }
+        temp[j] = mValues[i];
+        j++;
+    }
+
+    delete[] mValues;
+
+    mNumElements--;
+    mValues = new double[mNumElements];
+	//copy values
+	for(int i=0; i<mNumElements; i++)
+	{
+		mValues[i] = temp[i];
+	}
+}
+
+void doublevector::allocDouble(unsigned int index)
+{
+    int j=0;
+    int temp[mNumElements+1];
+
+    if(index > mNumElements)
+    {
+        return;
+    }
+
+	for(int i=0; i<mNumElements; i++)
+    {
+      //assignment skipped on index
+      if(i == index)
+      {
+          j++;
+      }
+      temp[j] = mValues[i];
+      j++;
+    }
+
+	delete[] mValues;
+
+    mNumElements++;
+    mValues = new double[mNumElements];
+	//copy values
+	for(int i=0; i<mNumElements; i++)
+	{
+		mValues[i] = temp[i];
+	}
 }
 
 int doublevector::size() const
@@ -104,14 +178,18 @@ void PrintVector(const doublevector *v)
 {
     for(int i=0; i< v->size(); i++)
     {
-        cout << endl << *(v->at(i));
+        std::cout << std::endl << *(v->at(i));
     }
-    cout << endl;
+    std::cout << std::endl;
 }
 
 void CopyVector(doublevector **dst, const doublevector *src)
 {
-
+    *dst = new doublevector();
+    for(int i=0; i<src->size(); i++)
+    {
+        (**dst).push_back(*(src->at(i)));
+    }
 }
 
 void Map(doublevector *v, double (*mapfunc)(double))
@@ -124,5 +202,20 @@ void Map(doublevector *v, double (*mapfunc)(double))
 
 int main()
 {
-    //Just for testing and so it compiles
+    doublevector test;
+    doublevector *test2;
+
+    for(int i=0; i<10; i++)
+    {
+        test.push_back(static_cast<double>(i));
+    }
+    test.insert(static_cast<double>(81), 5);
+
+    CopyVector(&test2, &test);
+    PrintVector(&test);
+    PrintVector(test2);
+
+    Map(&test, std::sqrt);
+    PrintVector(&test);
+    delete test2;
 }
