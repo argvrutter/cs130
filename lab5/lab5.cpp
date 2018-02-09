@@ -19,7 +19,7 @@ extern "C"
 void c_BubbleSort(char *array, int size)
 {
     bool sorted = 0;
-    std::string temp;
+    char* temp;
     while(!sorted)
     {
         sorted = 1;
@@ -27,7 +27,7 @@ void c_BubbleSort(char *array, int size)
         {
             if(array[i-1] > array[i])
             {
-                //swap function?
+                //swap
                 temp = array[i-1];
                 array[i-1] = array[i];
                 array[i] = temp;
@@ -39,7 +39,25 @@ void c_BubbleSort(char *array, int size)
 
 void c_SelectionSort(short *array, int size)
 {
-
+    short saveElement, smallest;
+    for(int step=0; i<size; step++)
+    {
+        smallest = step;
+        //find smallest
+        for(int i=step+1; i<size; i++)
+        {
+            if(array[i] < array[smallest])
+            {
+                smallest = i;
+            }
+        }
+        if(smallest != step)
+        {
+            saveElement=array[step];
+            array[step]=array[smallest];
+            array[smallest]=saveElement;
+        }
+    }
 }
 
 void c_InsertionSort(int *array, int size)
