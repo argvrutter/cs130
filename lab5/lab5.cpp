@@ -1,11 +1,13 @@
 /*
  * Author: Aiden Rutter
- * Lab 5 CPP, Assembly sort
+ * Lab 5 CPP, Assembly sorting
  */
+#include <stdlib.h>
 #include <iostream>
 void c_BubbleSort(char *array, int size);
 void c_SelectionSort(short *array, int size);
 void c_InsertionSort(int *array, int size);
+//greatest sum: double value of one element when added together
 long c_GreatestSum(int *array, int size);
 
 extern "C"
@@ -13,13 +15,14 @@ extern "C"
     void BubbleSort(char *array, int size);
     void SelectionSort(short *array, int size);
     void InsertionSort(int *array, int size);
+    //greatest sum: double value of one element when added together
     long GreatestSum(int *array, int size);
 }
 
 void c_BubbleSort(char *array, int size)
 {
     bool sorted = 0;
-    char* temp;
+    char temp;
     while(!sorted)
     {
         sorted = 1;
@@ -40,7 +43,7 @@ void c_BubbleSort(char *array, int size)
 void c_SelectionSort(short *array, int size)
 {
     short saveElement, smallest;
-    for(int step=0; i<size; step++)
+    for(int step=0; step<size; step++)
     {
         smallest = step;
         //find smallest
@@ -62,10 +65,62 @@ void c_SelectionSort(short *array, int size)
 
 void c_InsertionSort(int *array, int size)
 {
-
+    int currentElement, i;
+    for(int step=1; step<size; step++)
+    {
+        currentElement = array[step];
+        i= step-1;
+        while(i>=0; && array[i] > currentElement)
+        {
+            array[i+1] = array[i];
+            i-=1;
+        }
+        array[i+1] = currentElement;
+    }
 }
 
 long c_GreatestSum(int *array, int size)
 {
+    //double the largest element to get the largest sum.
+    long sum=0;
+    c_InsertionSort(array, size);
+    array[size-1] *= 2;
+    for(int i=0; i<size; i++)
+    {
+        sum += array[i];
+    }
+    return sum;
+}
 
+int main()
+{
+    int arr[10];
+    short arr2[10];
+    char arr3[10];
+    srand(3);
+    for(int i=0; i<10; i++)
+    {
+        arr[i] = rand() % 100;
+        arr2[i] = arr[i];
+        arr3[i] = arr[i];
+        std::cout << arr[i] << std::endl;
+    }
+    std::cout << "arr 1: insertion" << std::endl;
+    c_InsertionSort(arr, 10);
+    for(int i=0; i<10; i++)
+    {
+        std::cout << arr[i] << std::endl;
+    }
+    std::cout << "arr 2: selection" << std::endl;
+    c_SelectionSort(arr2, 10);
+    for(int i=0; i<10; i++)
+    {
+        std::cout << arr2[i] << std::endl;
+    }
+    c_BubbleSort(arr3, 10);
+    std::cout << "arr 3: bubble" << std::endl;
+    for(int i=0; i<10; i++)
+    {
+        std::cout << (int)arr3[i] << std::endl;
+    }
 }
