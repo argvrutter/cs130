@@ -66,11 +66,29 @@ SelectionSort:
         inc ecx
         jmp 1b
     1:
+    mov rax, 0
     ret
 
 .global InsertionSort
 InsertionSort:
+    mov rax, 1
+    1:
+        cmp rax, rsi
+        jge 1f
+        mov ecx, DWORD PTR[rdi+rax]
+        mov rdx, rax
+        dec rdx
+        2:
+            cmp rdx, 0
+            js 2f
 
+            dec rdx
+            jmp 2b
+        2:
+        inc rax
+        jmp 1b
+    1:
+    mov rax, 0
     ret
 .global GreatestSum
 GreatestSum:
