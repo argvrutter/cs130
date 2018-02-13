@@ -81,10 +81,15 @@ InsertionSort:
         2:
             cmp rdx, 0
             js 2f
-
+            mov r8d, DWORD PTR[rdi+rdx]
+            cmp r8d, ecx
+            jle 2f
+            //while loop body
+            mov DWORD PTR[rdi+rdx+1], r8d
             dec rdx
             jmp 2b
         2:
+        mov DWORD PTR[rdi+rdx+1], ecx
         inc rax
         jmp 1b
     1:
