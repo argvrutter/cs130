@@ -106,7 +106,7 @@ int main()
         std::cout << arr[i] << std::endl;
     }
     std::cout << "arr 1: insertion" << std::endl;
-    c_InsertionSort(arr, 10);
+    InsertionSort(arr, 10);
     for(int i=0; i<10; i++)
     {
         std::cout << arr[i] << std::endl;
