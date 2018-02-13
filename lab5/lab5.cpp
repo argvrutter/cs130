@@ -112,7 +112,7 @@ int main()
         std::cout << arr[i] << std::endl;
     }
     std::cout << "arr 2: selection" << std::endl;
-    c_SelectionSort(arr2, 10);
+    SelectionSort(arr2, 10);
     for(int i=0; i<10; i++)
     {
         std::cout << arr2[i] << std::endl;

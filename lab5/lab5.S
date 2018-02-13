@@ -41,16 +41,25 @@ SelectionSort:
     1:
         cmp ecx, esi
         jge 1f
-        mov r8w, cx
+        mov r8, rcx//smallest
         mov edx, ecx
         inc edx
         //for loop finds smallest
         2:
             cmp edx, esi
             jge 2f
-            mov r9w, WORD PTR[rdi+edx]
-
+            mov r9w, WORD PTR[rdi+rdx]//array[i]
+            mov r10w, WORD PTR[rdi+r8]//array[smallest]
+            cmp r9w, r10w
+            jge 3f
+                mov r8w, dx
             3:
+            cmp r8w, cx
+            je 4f //swap
+                mov r11w, WORD PTR[rdi+rcx]//array[step]
+                mov WORD PTR[rdi+rcx], r10w
+                mov WORD PTR[rdi+r8], r11w
+            4:
             inc edx
             jmp 2b
         2:
