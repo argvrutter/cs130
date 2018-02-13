@@ -70,7 +70,7 @@ void c_InsertionSort(int *array, int size)
     {
         currentElement = array[step];
         i= step-1;
-        while(i>=0; && array[i] > currentElement)
+        while(i>=0 && array[i] > currentElement)
         {
             array[i+1] = array[i];
             i-=1;
@@ -100,7 +100,7 @@ int main()
     srand(3);
     for(int i=0; i<10; i++)
     {
-        arr[i] = rand() % 100;
+        arr[i] = rand() % 100 -50;
         arr2[i] = arr[i];
         arr3[i] = arr[i];
         std::cout << arr[i] << std::endl;
@@ -117,7 +117,7 @@ int main()
     {
         std::cout << arr2[i] << std::endl;
     }
-    c_BubbleSort(arr3, 10);
+    BubbleSort(arr3, 10);
     std::cout << "arr 3: bubble" << std::endl;
     for(int i=0; i<10; i++)
     {
