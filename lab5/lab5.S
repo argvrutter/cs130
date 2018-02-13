@@ -56,15 +56,16 @@ SelectionSort:
             jge 3f
                 mov r8w, dx
             3:
-            cmp r8w, cx
-            je 4f //swap
-                mov r11w, WORD PTR[rdi+rcx*2]//array[step]
-                mov WORD PTR[rdi+rcx*2], r10w
-                mov WORD PTR[rdi+r8*2], r11w
-            4:
             inc edx
             jmp 2b
         2:
+        cmp r8w, cx
+        je 4f //swap
+            mov r10w, WORD PTR[rdi+r8*2]//array[smallest]
+            mov r11w, WORD PTR[rdi+rcx*2]//array[step]
+            mov WORD PTR[rdi+rcx*2], r10w
+            mov WORD PTR[rdi+r8*2], r11w
+        4:
         inc ecx
         jmp 1b
     1:
@@ -98,6 +99,7 @@ InsertionSort:
     1:
     mov rax, 0
     ret
+
 .global GreatestSum
 GreatestSum:
     call InsertionSort
