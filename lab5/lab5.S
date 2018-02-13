@@ -108,7 +108,8 @@ GreatestSum:
     1:
         cmp ecx, esi
         jge 1f
-        add rax, []
+        movsx r8, DWORD PTR[rdi+rcx*4]
+        add rax, r8
         inc ecx
         jmp 1b
     1:

@@ -123,4 +123,9 @@ int main()
     {
         std::cout << (int)arr3[i] << std::endl;
     }
+    std::cout << "c++ greatest sum" << std::endl;
+    std::cout << c_GreatestSum(arr, 10) << std::endl;
+
+    std::cout << "assembly greatest sum" << std::endl;
+    std::cout << GreatestSum(arr, 10) << std::endl;
 }
