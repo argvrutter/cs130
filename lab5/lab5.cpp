@@ -98,11 +98,13 @@ int main()
     short arr2[10];
     char arr3[10];
     srand(3);
+    int arr4[10];
     for(int i=0; i<10; i++)
     {
         arr[i] = rand() % 100 -50;
         arr2[i] = arr[i];
         arr3[i] = arr[i];
+        arr4[i] = arr[i];
         std::cout << arr[i] << std::endl;
     }
     std::cout << "arr 1: insertion" << std::endl;
@@ -123,9 +125,7 @@ int main()
     {
         std::cout << (int)arr3[i] << std::endl;
     }
-    std::cout << "c++ greatest sum" << std::endl;
-    std::cout << c_GreatestSum(arr, 10) << std::endl;
-
-    std::cout << "assembly greatest sum" << std::endl;
-    std::cout << GreatestSum(arr, 10) << std::endl;
+    
+    std::cout << "greatest sum" << std::endl;
+    std::cout << GreatestSum(arr4, 10) << std::endl;
 }

@@ -1,12 +1,9 @@
 .intel_syntax noprefix
-.section .rodata
-
-gw: .asciz "George Washington"
 
 .section .text
 
-//works
 .global BubbleSort
+//void BubbleSort(char *array, int size)
 BubbleSort:
     //while loop
     mov al, 0
@@ -35,8 +32,8 @@ BubbleSort:
     mov rax, 0
     ret
 
-//broke
 .global SelectionSort
+//void SelectionSort(short *array, int size)
 SelectionSort:
     //for loop
     mov ecx, 0//step
@@ -72,8 +69,8 @@ SelectionSort:
     mov rax, 0
     ret
 
-//works
 .global InsertionSort
+//void InsertionSort(int *array, int size)
 InsertionSort:
     mov rax, 1
     1:
@@ -101,6 +98,7 @@ InsertionSort:
     ret
 
 .global GreatestSum
+//long GreatestSum(int *array, int size)
 GreatestSum:
     call InsertionSort
     mov edx, DWORD PTR[rdi+rsi*4-4]
