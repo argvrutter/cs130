@@ -19,7 +19,7 @@ BubbleSort:
             mov r8b, BYTE PTR [rdi-1+rax]
             mov r9b, BYTE PTR [rdi+rax]
             cmp r8b, r9b
-            jle 3f
+            jle 3f //if(array[i-1] > array[i])
                 mov BYTE PTR [rdi-1+rax], r9b
                 mov BYTE PTR [rdi+rax], r8b
                 mov al, 0
@@ -57,7 +57,7 @@ SelectionSort:
             jmp 2b
         2:
         cmp r8w, cx
-        je 4f //swap
+        je 4f //swap if(smallest != step)
             mov r10w, WORD PTR[rdi+r8*2]//array[smallest]
             mov r11w, WORD PTR[rdi+rcx*2]//array[step]
             mov WORD PTR[rdi+rcx*2], r10w
@@ -73,13 +73,13 @@ SelectionSort:
 //void InsertionSort(int *array, int size)
 InsertionSort:
     mov rax, 1
-    1:
+    1://for(int step=1; step<size; step++)
         cmp rax, rsi
         jge 1f
         mov ecx, DWORD PTR[rdi+rax*4]
         mov rdx, rax
         dec rdx
-        2:
+        2://while(i>=0 && array[i] > currentElement)
             cmp rdx, 0
             js 2f
             mov r8d, DWORD PTR[rdi+rdx*4]
@@ -102,10 +102,10 @@ InsertionSort:
 GreatestSum:
     call InsertionSort
     mov edx, DWORD PTR[rdi+rsi*4-4]
-    imul edx, 2
+    imul edx, 2 //multiplies last (and thus largest)element by 2
     mov DWORD PTR[rdi+rsi*4-4], edx
     mov ecx, 0
-    1:
+    1://for loop, sums elements of array
         cmp ecx, esi
         jge 1f
         movsx r8, DWORD PTR[rdi+rcx*4]
