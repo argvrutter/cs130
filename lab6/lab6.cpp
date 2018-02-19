@@ -133,4 +133,8 @@ int main()
     map.erase('g');
     map.erase('m');
     map.print();
+    map.set('x', 255);
+    map.set('z', 2048);
+    map.set('g', 665);
+    map.print();
 }

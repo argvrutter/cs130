@@ -5,7 +5,14 @@
 //void asm_Construct(void *mymap_pointer)
 .global asm_Construct
 asm_Construct:
-
+    mov rax, 0
+    1://for(int i=0; i<20; i++)
+        cmp rax, 20
+        jge 1f
+        mov BYTE PTR[rdi + rax], '*'
+        mov DWORD PTR[rdi + rax + 4], -1 
+    1:
+    mov rax, 0
     ret
 //void asm_Set(void *mymap_pointer, char key, int value)
 .global asm_Set
