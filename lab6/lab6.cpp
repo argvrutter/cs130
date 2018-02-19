@@ -2,7 +2,7 @@
 * Author: Aiden Rutter
 * Lab 6: MyMap
 */
-
+#include <stdio.h>
 extern "C" //extern "C" is required here
 {
     //These functions will be implemented in ASSEMBLY
@@ -111,13 +111,26 @@ void c_Erase(mymap *mymap_pointer, char key)
 
 void c_Print(const mymap *mymap_pointer)
 {
+    char key;
+    int value;
     for(int i=0; i<20; i++)
     {
-        printf("%c = %d \n", mymap_pointer->mKeyValues[i].key, mymap_pointer->mKeyValues[i].value);
+        key = mymap_pointer->mKeyValues[i].key;
+        value = mymap_pointer->mKeyValues[i].value;
+        printf("%c = %d \n", key, value);
     }
 }
 
 int main()
 {
-
+    mymap map;
+    map.print();
+    for(int i=0; i<20; i++)
+    {
+        map.set(97+i, i);
+    }
+    map.print();
+    map.erase('g');
+    map.erase('m');
+    map.print();
 }
