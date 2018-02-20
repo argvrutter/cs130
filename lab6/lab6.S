@@ -1,6 +1,6 @@
 .intel_syntax noprefix
 .section .rodata
- equ: .asciz  "%c = %d \n"
+ output: .asciz  "%c = %d \n"
 .section .text
 
 //void asm_Construct(void *mymap_pointer)
@@ -27,15 +27,14 @@ asm_Set:
         mov DWORD PTR[rdi+rax*8 +4], edx
         jmp 2f
     1:
-	push sil
+	mov sil, cl
     mov sil, '*'
 	call asm_Get
 	cmp rax, 0
 	js 2f
 	cmp rax, 20
 	jge 2f
-		pop sil
-		mov BYTE PTR[rdi+rax*8], sil
+		mov BYTE PTR[rdi+rax*8], cl
 		mov DWORD PTR[rdi+rax*8 +4], edx
 	2:
     mov rax, 0
@@ -72,5 +71,17 @@ asm_Erase:
 //void asm_Print(const void *mymap_pointer)
 .global asm_Print
 asm_Print:
-
+    mov r8, rdi
+    mov r9, 0
+    1://for(int i=0; i<20; i++)
+        cmp r9, 20
+        jge 1f
+        mov	sil, BYTE PTR[r8+r9*8]
+        mov edx, DWORD PTR[r9+r9*8 +4]
+        lea	rdi, [rip+output]
+        mov rax, 0
+        call printf@plt
+        inc r9
+    1:
+    mov rax, 0
     ret

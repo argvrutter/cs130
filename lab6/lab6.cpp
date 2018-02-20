@@ -56,7 +56,7 @@ struct mymap
 {
     KeyValue mKeyValues[20];
     //change asm to c_ temp here
-    mymap () { c_Construct(this); }
+    mymap () { asm_Construct(this); }
     void set(char key, int value) { c_Set(this, key, value); }
     int get(char key) const { return c_Get(this, key); }
     void erase(char key) { c_Erase(this, key); }
