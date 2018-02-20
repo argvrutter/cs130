@@ -61,7 +61,13 @@ asm_Get:
 .global asm_Erase
 asm_Erase:
     call asm_Get
-
+	cmp rax, 0
+	js 1f
+	cmp rax, 20
+	jge 1f
+		mov BYTE PTR[rdi+rax*8], '*'
+	1:
+	mov rax, 0
     ret
 //void asm_Print(const void *mymap_pointer)
 .global asm_Print
