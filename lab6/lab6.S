@@ -27,7 +27,11 @@ asm_Get:
     1://for(int i=0; i<20; i++)
         cmp rax, 20
         jge 1f
-        mov dl
+        mov r8b, BYTE PTR[rdi+rax]
+        cmp r8b, sil
+        jne 2f
+            ret
+        2:
         inc rax
     1:
     mov rax, -1
