@@ -10,7 +10,8 @@ asm_Construct:
         cmp rax, 20
         jge 1f
         mov BYTE PTR[rdi + rax], '*'
-        mov DWORD PTR[rdi + rax + 4], -1 
+        mov DWORD PTR[rdi + rax + 4], -1
+        inc rax
     1:
     mov rax, 0
     ret
@@ -22,7 +23,14 @@ asm_Set:
 //int  asm_Get(const void *mymap_pointer, char key)
 .global asm_Get
 asm_Get:
-
+    mov rax, 0
+    1://for(int i=0; i<20; i++)
+        cmp rax, 20
+        jge 1f
+        mov dl
+        inc rax
+    1:
+    mov rax, -1
     ret
 //void asm_Erase(void *mymap_pointer, char key)
 .global asm_Erase
