@@ -57,10 +57,10 @@ struct mymap
     KeyValue mKeyValues[20];
     //change asm to c_ temp here
     mymap () { asm_Construct(this); }
-    void set(char key, int value) { c_Set(this, key, value); }
-    int get(char key) const { return c_Get(this, key); }
-    void erase(char key) { c_Erase(this, key); }
-    void print() const { c_Print(this); }
+    void set(char key, int value) { asm_Set(this, key, value); }
+    int get(char key) const { return asm_Get(this, key); }
+    void erase(char key) { asm_Erase(this, key); }
+    void print() const { asm_Print(this); }
 };
 
 void c_Construct(mymap *mymap_pointer)

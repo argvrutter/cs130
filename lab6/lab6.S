@@ -13,6 +13,7 @@ asm_Construct:
         mov BYTE PTR[rdi + rax*8], '*'
         mov DWORD PTR[rdi + rax*8 + 4], -1
         inc rax
+        jmp 1b
     1:
     mov rax, 0
     ret
@@ -53,6 +54,7 @@ asm_Get:
             ret
         2:
         inc rax
+        jmp 1b
     1:
     mov rax, -1
     ret
@@ -71,17 +73,21 @@ asm_Erase:
 //void asm_Print(const void *mymap_pointer)
 .global asm_Print
 asm_Print:
-    mov r8, rdi
-    mov r9, 0
+    mov rax, 0
     1://for(int i=0; i<20; i++)
-        cmp r9, 20
+        cmp rax, 20
         jge 1f
-        mov	sil, BYTE PTR[r8+r9*8]
-        mov edx, DWORD PTR[r9+r9*8 +4]
+        push rdi
+        mov	sil, BYTE PTR[rdi+rax*8]
+        mov edx, DWORD PTR[rdi+rax*8 +4]
         lea	rdi, [rip+output]
+        push rax
         mov rax, 0
         call printf@plt
-        inc r9
+        pop rax
+        pop rdi
+        inc rax
+        jmp 1b
     1:
     mov rax, 0
     ret
