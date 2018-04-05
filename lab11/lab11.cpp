@@ -32,58 +32,30 @@ struct Fmt
     uint16_t nBlockAlign;
     uint16_t wBitsPerSample;
 };
-//n channel & templated type
-template <class T>
-struct Sample
+template<class T>
+T bufToInt(char* buf)
 {
-    T *vals;
-    Sample(uint32_t nChannels)
+    T val = 0;
+    if(sizeof(buf) < sizeof(T))
     {
-        vals = new T[nChannels];
+        printf("Invalid buffer to int");
+        throw;
     }
-    ~Sample()
+    for (uint32_t i = 0; i < sizeof(T); i++)
     {
-        delete[] vals;
+        val |= (buf[i] << 8*(sizeof(T) - (i+1)));
     }
-};
-/*
-struct Sample8 : public Sample
-{
-    uint8_t l,r;
-};
-struct Sample16 : public Sample
-{
-    int16_t l,r;
-};
-struct Sample24 : public Sample
-{
-    int24_t l,r;
-};
-struct Sample32 : public Sample
-{
-    int32_t l,r;
-};
-struct Sample64 : public Sample
-{
-    int64_t *samples;
-    Sample64(uint32_t nChannels)
-    {
-        samples = new int64_t[nChannels];
-    }
-    ~Sample64()
-    {
-        delete[] samples;
-    }
-};
-*/
+    return val;
+}
+
 int main(int argc, char **argv)
 {
     FILE *fin, *fout;
     Fmt format;
     char chunkID[5];
-    double lScale, rScale;
+    double scale[2];
     uint32_t data_size, chunk_size, junk_size, pos, size;
-    unsigned long num_samples, sample_size;
+    unsigned long num_samples, sample_size, data_pos;
     double duration_s;
     char *headerBuf, *sampleBuf, fmt[20];
     //printf("struct sizes: %d , %d , %d , %d, %d", sizeof(Sample8), sizeof(Sample16), sizeof(Sample24), sizeof(Sample32), sizeof(Sample64));
@@ -92,6 +64,7 @@ int main(int argc, char **argv)
         perror("Arguments: <in.wav> <out.wav> <left channel scale> <right channel scale>");
         return -1;
     }
+
     //open file
     fin = fopen(argv[1], "rb");
     if (fin == nullptr)
@@ -100,6 +73,8 @@ int main(int argc, char **argv)
         return -1;
     }
     fout = fopen(argv[2], "wb");
+    scale[0] = atof(argv[3]);
+    scale[1] = atof(argv[4]);
     //read header
 
     fscanf(fin, "%4s", chunkID);
@@ -142,112 +117,102 @@ int main(int argc, char **argv)
         }
     }
     printf("%s pos %d\n", chunkID, ftell(fin));
-
+    data_pos = ftell(fin);
     fread(&data_size, 1, sizeof(data_size), fin);
     printf("Size of data section: %d", data_size);
 
     num_samples = (8 * data_size) / (format.nChannels * format.wBitsPerSample);
     sample_size = (format.nChannels * format.wBitsPerSample)/8;
-    duration_s = (double)chunk_size / format.nAvgBytesPerSec;
 
     printf("Num samples: %d \n", num_samples);
     pos = ftell(fin);
 
     fseek(fin, 0, SEEK_END);
     size = ftell(fin);
-    headerBuf = new char[size-data_size+8];
+    //headerBuf = new char[data_pos];
+    headerBuf = (char*)malloc(data_pos);
+    std::cout << "size of header: " << sizeof(headerBuf) << std::endl;
 
     fseek(fin, 0, SEEK_SET);
     fflush(fin);
     printf("pos: %d read size: %d\n", ftell(fin), size-data_size+8);
-    sprintf(fmt, "%%%uc", size-data_size+8);
-    //fread(&headerBuf, 1, sizeof(headerBuf), fin);
-    fscanf(fin, fmt, headerBuf);
+    sprintf(fmt, "%%%uc", data_pos);
+    fread(headerBuf, 1, data_pos, fin);
+    //fscanf(fin, fmt, headerBuf);
     //fseek(fin, pos, SEEK_SET);
+    std::cout << "size of header: " << sizeof(&headerBuf[0]) << std::endl;
     fwrite(headerBuf, 1, sizeof(headerBuf), fout);
+    sampleBuf = new char[data_size];
+    sprintf(fmt, "%%%uc", data_size);
 
-    /*
-    switch(format.wBitsPerSample)
-    {
-        case 8:
-        {
-            samples = new Sample8[num_samples];
-            //using Sample = Sample8;
-            break;
-        }
-        case 16:
-        {
-            samples = new Sample16[num_samples];
-            using Sample = Sample16;
-            std::cout << sizeof(samples);
-            break;
-        }
-        case 24:
-        {
-            samples = new Sample24[num_samples];
-            using Sample = Sample24;
-            break;
-        }
-        case 32:
-        {
-            samples = new Sample32[num_samples];
-            using Sample = Sample32;
-            break;
-        }
-        default:
-        {
-            printf("Bit depth %d not supported", format.wBitsPerSample);
-            return -1;
-        }
-    }*/
-    //auto samples;
-    switch(format.wBitsPerSample)
-    {
-        case 8:
-        {
-            Sample<uint8_t> sample(3);
-            std::cout << std::endl << "sizeof tempsample: " << sizeof(sample) << std::endl << std::endl;
-            //using Sample = Sample8;
-            break;
-        }/*
-        case 16:
-        {
-            samples = new Sample<uint8_t>[num_samples];
+    //fread(&sampleBuf, 1, data_size, fin);
+    fscanf(fin, fmt, sampleBuf);
 
-            break;
-        }
-        case 24:
+    char miniBuf[format.wBitsPerSample/8];
+    int i=0;
+    bool j=0;
+    uint8_t val8;
+    int16_t val16;
+    int24_t val24;
+    int32_t val32;
+    double temp;
+    std::cout << "sizeof samplebuf " << sizeof(sampleBuf) << std::endl;
+    for(char s : std::string(sampleBuf))
+    {
+        std::cout << "got here " << std::endl;
+
+        if(i+1 == format.wBitsPerSample/8)
         {
-            samples = new Sample24[num_samples];
-            using Sample = Sample24;
-            break;
+            switch(i)
+            {
+                case 0://8
+                {
+                    //fwrite(static_cast<uint8_t>(static_cast<double>(static_cast<uint8_t>(miniBuf)) * scale[j]), sizeof(uint8_t), 1, fout);
+                    val8 = bufToInt<uint8_t>(miniBuf);
+                    temp = static_cast<double>(val8) * scale[j];
+                    val8 = static_cast<uint8_t>(temp);
+                    fwrite(&val8, sizeof(uint8_t), 1, fout);
+                    break;
+                }
+                case 1://16
+                {
+                    val16 = bufToInt<int16_t>(miniBuf);
+                    temp = static_cast<double>(val16) * scale[j];
+                    val16 = static_cast<int16_t>(temp);
+                    std::cout << "got here " << std::endl;
+
+                    fwrite(&val16, sizeof(int16_t), 1, fout);
+                    break;
+                }
+                case 2://24
+                {
+                    //val24 = bufToInt<int24_t>(miniBuf);
+                    break;
+                }
+                case 3://32
+                {
+                    val32 = bufToInt<int32_t>(miniBuf);
+                    temp = static_cast<double>(val32) * scale[j];
+                    val32 = static_cast<int32_t>(temp);
+                    fwrite(&val32, sizeof(int32_t), 1, fout);
+                    break;
+                }
+                default:
+                {
+                    printf("Invalid bit depth.");
+                    return -1;
+                }
+            }
+            i=0;
+            j=!j;
         }
-        case 32:
-        {
-            samples = new Sample32[num_samples];
-            using Sample = Sample32;
-            break;
-        }*/
-        default:
-        {
-            printf("Bit depth %d not supported", format.wBitsPerSample);
-            return -1;
-        }
+        miniBuf[i] = s;
+        i++;
     }
-    //parse headerBuf size of sample
-    //fread(samples, 1, data_size, fin);
-    //printf("sizeof samples %d bytes to read %d \n", sizeof(samples), data_size);
 
-/*
-    for(int i=0; i<num_samples; i++)
-    {
-        static_cast<Sample*>(samples)[i].l *= lScale;
-        samples[i].r *= rScale;
-    }*/
-    //char *dataheaderBuf
 
     delete[] headerBuf;
-    //delete[] samples;
+    delete[] sampleBuf;
     fclose(fin);
     fclose(fout);
 }
